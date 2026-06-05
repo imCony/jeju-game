@@ -381,12 +381,21 @@ export default function App() {
               </p>
             </div>
 
-            {/* ★ 사진 크기를 슬림하게 조절한 이미지 박스 구역 */}
-            <div style={{ margin: '30px 0', borderRadius: 12, overflow: 'hidden', border: `1px solid ${COL.border}`, position: 'relative' }}>
+            {/* ★ 사진 이미지 박스 구역 */}
+            <div style={{ margin: '24px 0 32px', borderRadius: 14, overflow: 'hidden', border: `1px solid ${COL.border}`, boxShadow: 'inset 0 0 1px rgba(0,0,0,0.1)', position: 'relative' }}>
               {INTRO_PHOTO ? (
-                // 사진 높이를 최대 220px로 제한하여 화면을 너무 많이 차지하지 않게 조절했습니다.
-                <div style={{ width: '100%', height: 220, overflow: 'hidden' }}>
-                  <img src={INTRO_PHOTO} alt="제주 원도심 배경" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%' }} />
+                // 높이를 300px로 시원하게 키우고, 한라산의 산봉우리와 뭉게구름이 가장 웅장하게 보이도록 비율을 최적화했습니다.
+                <div style={{ width: '100%', height: 300, overflow: 'hidden' }}>
+                  <img 
+                    src={INTRO_PHOTO} 
+                    alt="제주 원도심 배경" 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover', 
+                      objectPosition: 'center 45%' // 구름과 산의 비율이 가장 안정적으로 떨어지는 축입니다.
+                    }} 
+                  />
                 </div>
               ) : (
                 <CityScape scores={{ people: 15, economy: 15, infra: 15 }} />
