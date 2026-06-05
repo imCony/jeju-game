@@ -1,27 +1,15 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Building2, Citrus, Users, TrendingUp, Wallet, RotateCcw, ArrowRight,
   AlertTriangle, CheckCircle2, Lightbulb, MapPin, Trophy, Sparkles,
-  Volume2, VolumeX
+  Volume2, VolumeX, ChevronRight
 } from 'lucide-react';
 
 /* =========================================================================
    ▶ 직접 찍은 사진(4:3 권장) 넣기. public 폴더에 올린 뒤 경로 지정.
-   - INTRO_PHOTO : 시작 화면 사진 (예: '/intro.jpg')
-   - PLAY_PHOTOS : 게임 화면 사진을 '턴별'로 지정하는 배열.
-       [0]=1턴, [1]=2턴 ... [9]=10턴 (최대 10개).
-       어떤 턴 칸을 ''(빈칸)으로 두면 직전에 지정한 사진이 그대로 유지됩니다.
-       → 한 장만 모든 턴에 쓰려면 [0]에만 넣으면 됩니다.
-   각각 비워두면 그 화면은 기본 도시 그림이 표시됩니다.
-   (사진은 늘어남 없이 cover로 꽉 차게 들어갑니다)
    ========================================================================= */
 const INTRO_PHOTO = '';
-const PLAY_PHOTOS = [
-  // 예시) '/play1.jpg', '', '', '', '/play5.jpg', '', '', '', '', '/play10.jpg'
-];
-
-/* ▶ 배경음악 파일을 쓰려면 public 에 mp3 넣고 BGM_URL 지정 (저작권 없는 음원만).
-     비워두면 코드로 생성한 잔잔한 앰비언트가 재생됩니다. */
+const PLAY_PHOTOS = [];
 const BGM_URL = '/bgm.mp3';
 
 /* 밸런스 */
@@ -30,7 +18,7 @@ const START_SCORE = 25;
 const DECAY = 1;
 const PASS_LINE = 60;
 
-/* 턴별 이벤트 ( question = 쉬운 말 핵심 질문 ) */
+/* 턴별 이벤트 */
 const gameEvents = [
   { tag: '정책 전환', icon: '🧭', title: '정책 방향 전환 (모관지구)', question: '첫 사업, 어디에 투자할까?',
     description: '전면 철거 대신 지역 특성을 살리는 방향으로 전환했습니다. 첫 핵심 사업을 고르세요.',
@@ -54,7 +42,7 @@ const gameEvents = [
     description: '유동인구를 불러올 핵심 거점 시설을 만듭니다. 관광형이냐, 문화형이냐.',
     options: [
       { text: '제주여행자센터 신설', cost: 1000, effects: { people: 15, economy: 10, infra: 10 }, log: '외부 관광객이 원도심으로 진입하는 게이트웨이가 생겼습니다.' },
-      { text: "문화공간 '갤러리 숨비마루' 조성", cost: 800, effects: { infra: 15, people: 10, economy: 5 }, log: '도민과 예술인이 모이는 문화 예술 거점이 둥지를 텄습니다.' },
+      { text: "문화공간 '갤러리 숨비마루' 조성", cost: 800, effects: { infra: 15, people: 10, economy: 5 }, log: '도민과 예술인이 모이는 문화 예술 거점이 둥지를 턄습니다.' },
     ] },
   { tag: '거버넌스', icon: '🤝', title: '원도심 활성화 협의체 구성', question: '민관 협력 체계를 만들까?',
     description: '입주 기관과 주민·상인이 함께 의사결정하는 협의체. 사업의 지속가능성을 좌우합니다.',
@@ -139,7 +127,7 @@ const getGrade = (avg) =>
   avg >= 60 ? { g: 'B', c: '#2563eb' } :
   avg >= 45 ? { g: 'C', c: '#ea580c' } : { g: 'D', c: '#e11d48' };
 
-/* 앰비언트 사운드 (외부 파일 불필요) */
+/* 앰비언트 사운드 */
 function createAmbience() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
@@ -176,7 +164,6 @@ function createAmbience() {
   };
 }
 
-/* ===== 밝은 테마 팔레트 ===== */
 const COL = {
   bg: '#eef3fa', panel: '#ffffff', panelSoft: '#f4f7fc', border: '#e3e9f2',
   text: '#0f1b33', body: '#3a4760', mute: '#64748b', faint: '#94a3b8',
@@ -206,7 +193,6 @@ function Bar({ icon, label, value, color, delta }) {
   );
 }
 
-/* ===== 낮 시간대 원도심 (지표에 반응) ===== */
 function CityScape({ scores }) {
   const avg = (scores.people + scores.economy + scores.infra) / 3;
   const litCount = Math.round((scores.infra / 100) * BUILDINGS.length);
@@ -223,14 +209,11 @@ function CityScape({ scores }) {
         <radialGradient id="damb" cx="50%" cy="100%" r="80%"><stop offset="0%" stopColor="#fdba74" stopOpacity={0.04 + (avg / 100) * 0.16} /><stop offset="100%" stopColor="#fdba74" stopOpacity="0" /></radialGradient>
         <linearGradient id="dsea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7fc8ef" /><stop offset="100%" stopColor="#3f97cf" /></linearGradient>
         <linearGradient id="dsunref" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#fff4c8" stopOpacity="0.8" /><stop offset="100%" stopColor="#fff4c8" stopOpacity="0" /></linearGradient>
-        <clipPath id="dseaClip"><rect x="0" y="274" width="600" height="26" /></clipPath>
       </defs>
 
       <rect x="0" y="0" width="600" height="300" fill="url(#dsky)" />
-      {/* 해 */}
       <circle cx="524" cy="46" r="38" fill="url(#dsunglow)" />
       <circle cx="524" cy="46" r="17" fill="url(#dsun)" />
-      {/* 구름 */}
       {CLOUDS.map((c, i) => (
         <g key={i} className="cloud" style={{ animationDelay: `${c.d}s` }} opacity="0.92" transform={`translate(${c.x},${c.y * 0.62}) scale(${c.s * 0.85})`}>
           <ellipse cx="0" cy="0" rx="22" ry="12" fill="#ffffff" />
@@ -238,12 +221,10 @@ function CityScape({ scores }) {
           <ellipse cx="-16" cy="5" rx="14" ry="9" fill="#f4f9ff" />
         </g>
       ))}
-      {/* 한라산 */}
       <path d="M -20 230 Q 150 110 300 168 Q 450 95 640 230 Z" fill="#a7cbe0" opacity="0.7" />
       <path d="M 266 168 L 300 148 L 334 168 L 320 176 Q 300 167 280 176 Z" fill="#ffffff" opacity="0.85" />
       <rect x="0" y="150" width="600" height="150" fill="url(#damb)" />
 
-      {/* 건물 */}
       {BUILDINGS.map((b, i) => {
         const active = i < litCount;
         const top = ground - b.h;
@@ -264,10 +245,8 @@ function CityScape({ scores }) {
         );
       })}
 
-      {/* 도로 / 보행로 */}
       <rect x="0" y={ground} width="600" height="5" fill="#c4cfde" />
       <rect x="0" y={ground + 5} width="600" height="9" fill="#cdd7e4" />
-      {/* 나무 (기반시설↑) */}
       {TREE_SPOTS.slice(0, treeCount).map((tx, i) => (
         <g key={i} className="tree" style={{ animationDelay: `${(i * 0.4).toFixed(1)}s` }}>
           <rect x={tx - 1.5} y={ground - 10} width="3" height="12" rx="1" fill="#8a5a3b" />
@@ -276,12 +255,10 @@ function CityScape({ scores }) {
           <circle cx={tx + 5} cy={ground - 11} r="6" fill="#65a350" />
         </g>
       ))}
-      {/* 사람 */}
       {PEOPLE_SPOTS.slice(0, peopleCount).map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r="2.6" fill="#0e7490" className="walker" style={{ animationDelay: `${p.d}s` }} />
       ))}
 
-      {/* === 탑동 앞바다 === */}
       <rect x="0" y="274" width="600" height="26" fill="url(#dsea)" />
       <rect className="searef" x="512" y="274" width="24" height="26" fill="url(#dsunref)" />
       <g className="wave" opacity="0.75">
@@ -295,7 +272,7 @@ function CityScape({ scores }) {
 }
 
 export default function App() {
-  const [phase, setPhase] = useState('intro');
+  const [phase, setPhase] = useState('title'); // 'title' -> 'story' -> 'play' -> 'result'
   const [turn, setTurn] = useState(1);
   const [budget, setBudget] = useState(START_BUDGET);
   const [scores, setScores] = useState({ people: START_SCORE, economy: START_SCORE, infra: START_SCORE });
@@ -306,11 +283,31 @@ export default function App() {
   const audioRef = useRef(null);
   const bgmRef = useRef(null);
 
+  // 인트로 스토리라인 점진적 등장을 위한 인덱스 상태
+  const [storyIndex, setStoryIndex] = useState(0);
+  const storyLines = [
+    "한때 행정, 상업, 문화의 중심지로 북적였던 제주 원도심(칠성로·중앙로·동문시장·탑동)...",
+    "1990년대 이후 신도심이 개발되면서 사람도, 가게도, 따뜻했던 온기도 모두 떠나갔습니다.",
+    "텅 비어버린 거리에 남은 것은 깊어지는 침체와 쓸쓸한 정적뿐입니다.",
+    "이 서글픈 공간을 다시 걷고 싶고, 머물고 싶은 '15분 도시'로 되살리기 위해...",
+    "바로 당신이 새로운 👑 '원도심 재생 추진단장'으로 임명되었습니다."
+  ];
+
+  // 타이핑/등장 제어
+  useEffect(() => {
+    if (phase === 'story' && storyIndex < storyLines.length) {
+      const timer = setTimeout(() => {
+        setStoryIndex(prev => prev + 1);
+      }, 1600); // 1.6초 간격으로 한 줄씩 등장
+      return () => clearTimeout(timer);
+    }
+  }, [phase, storyIndex]);
+
   const event = gameEvents[turn - 1];
   const avg = useMemo(() => Math.round((scores.people + scores.economy + scores.infra) / 3), [scores]);
   const grade = getGrade(avg);
   const canAffordAny = event.options.some((o) => budget >= o.cost);
-  // 현재 턴의 게임 사진 (빈 칸이면 직전에 지정한 사진 유지)
+  
   let playPhoto = '';
   for (let t = turn - 1; t >= 0; t--) { if (PLAY_PHOTOS[t]) { playPhoto = PLAY_PHOTOS[t]; break; } }
 
@@ -327,13 +324,19 @@ export default function App() {
   };
   const toggleMusic = () => setMusic((m) => { const n = !m; playMusic(n); return n; });
 
+  const goToIntroStory = () => {
+    setStoryIndex(0);
+    setPhase('story');
+    if (music) playMusic(true);
+  };
+
   const startGame = () => {
     setPhase('play'); setTurn(1); setBudget(START_BUDGET);
     setScores({ people: START_SCORE, economy: START_SCORE, infra: START_SCORE });
     setLogs(['제주 원도심 재생 프로젝트가 시작되었습니다.']);
     setLastDelta(null); setTip(null);
-    if (music) playMusic(true);
   };
+  
   const choose = (o) => {
     if (budget < o.cost) return;
     setBudget((b) => b - o.cost);
@@ -351,17 +354,17 @@ export default function App() {
       setTurn((t) => t + 1); setTip(null);
     } else { setTip(null); setPhase('result'); }
   };
-  const reset = () => setPhase('intro');
+  const reset = () => setPhase('title');
 
   const MusicBtn = ({ compact }) => (
     <button onClick={toggleMusic} className="pbtn" title={music ? '음악 끄기' : '음악 켜기'}
-      style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: music ? COL.orangeD + '1a' : '#eef1f6', color: music ? COL.orange : COL.mute, border: `1px solid ${music ? COL.orange + '55' : COL.border}`, padding: '8px 12px', borderRadius: 8, cursor: 'pointer' }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: music ? COL.orangeD + '1a' : '#eef1f6', color: music ? COL.orange : COL.mute, border: `1px solid ${music ? COL.orange + '55' : COL.border}`, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', zIndex: 10 }}>
       {music ? <Volume2 size={15} /> : <VolumeX size={15} />}{!compact && (music ? '음악 ON' : '음악 OFF')}
     </button>
   );
 
   return (
-    <div style={{ background: COL.bg, minHeight: '100vh', color: COL.text, fontFamily: FONT, padding: '20px 16px' }}>
+    <div style={{ background: COL.bg, minHeight: '100vh', color: COL.text, fontFamily: FONT, padding: '20px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       <style>{`
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css');
         @keyframes cloudDrift { 0%{transform:translateX(0)} 100%{transform:translateX(16px)} }
@@ -378,7 +381,7 @@ export default function App() {
         .searef{ animation:searefAnim 4s ease-in-out infinite; }
         .tree{ animation:treePop .5s ease both; transform-box:fill-box; transform-origin:center bottom; }
         .bldpop{ animation:bldRise .5s ease both; transform-box:fill-box; transform-origin:center bottom; }
-        .fadeup{ animation:fadeUp .45s ease both; }
+        .fadeup{ animation:fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both; }
         .pop{ animation:pop .28s ease both; }
         .opt:hover:not(:disabled){ border-color:${COL.orange} !important; background:#fff7f1 !important; transform:translateY(-2px); box-shadow:0 8px 20px rgba(249,115,22,0.12); }
         .opt{ transition:all .18s ease; }
@@ -390,74 +393,96 @@ export default function App() {
         @media (max-width: 860px){ .layout{ grid-template-columns: 1fr; } .opts{ grid-template-columns: 1fr; } }
       `}</style>
 
-      {/* ===== 인트로 ===== */}
-      {phase === 'intro' && (
-        <div className="fadeup" style={{ maxWidth: 860, margin: '0 auto' }}>
-          <div style={panel({ overflow: 'hidden' })}>
-            <div style={{ position: 'relative', borderBottom: `1px solid ${COL.border}` }}>
-              {INTRO_PHOTO ? (
-                <div style={{ width: '100%', aspectRatio: '16 / 9', maxHeight: 360, overflow: 'hidden', position: 'relative' }}>
-                  <img src={INTRO_PHOTO} alt="제주 원도심" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.25) 32%, rgba(0,0,0,0) 58%)' }} />
-                </div>
-              ) : (
-                <CityScape scores={{ people: 18, economy: 18, infra: 22 }} />
-              )}
-              <div style={{ position: 'absolute', top: 18, left: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 30, lineHeight: 1 }}>🍊</span>
-                <div>
-                  <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', color: COL.text, textShadow: '0 1px 8px rgba(255,255,255,0.7)' }}>구해줘! 제주 원도심</h1>
-                  <p style={{ margin: 0, fontSize: 12.5, color: '#3f5170', fontWeight: 600, textShadow: '0 1px 6px rgba(255,255,255,0.7)' }}>15분 도시 제주: 원도심 활성화 시뮬레이터</p>
-                </div>
-              </div>
-              <div style={{ position: 'absolute', top: 18, right: 18 }}><MusicBtn compact /></div>
+      {/* ===== 1단계: 타이틀 화면 ===== */}
+      {phase === 'title' && (
+        <div className="fadeup" style={{ maxWidth: 640, width: '100%', margin: '0 auto' }}>
+          <div style={panel({ overflow: 'hidden', textAlign: 'center', padding: '40px 28px' })}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+              <MusicBtn compact />
             </div>
-            <div style={{ padding: '26px 28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <MapPin size={18} color={COL.orange} /><h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>제주 원도심이란?</h2>
-              </div>
-              <p style={{ margin: '0 0 14px', fontSize: 15, lineHeight: 1.8, color: COL.body }}>
-                제주 <b style={{ color: COL.text }}>원도심</b>은 제주시의 옛 중심지인 <b style={{ color: COL.text }}>칠성로·중앙로·동문시장·탑동</b> 일대입니다.
-                한때 제주의 행정·상업·문화가 모이던 번화가였지만, 1990년대 이후 <b style={{ color: COL.text }}>신제주(연동·노형)</b> 개발로
-                기관과 상권, 인구가 빠져나가 <b style={{ color: COL.orange }}>공동화(空洞化)</b>와 쇠퇴를 겪었습니다.
+            
+            <div style={{ margin: '20px 0' }}>
+              <span style={{ fontSize: 64, display: 'block', marginBottom: 10, animation: 'cloudDrift 3s ease-in-out infinite alternate' }}>🍊</span>
+              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 900, letterSpacing: '-0.03em', color: COL.text }}>
+                구해줘! 제주 원도심
+              </h1>
+              <p style={{ margin: '8px 0 0', fontSize: 14, color: COL.mute, fontWeight: 600 }}>
+                15분 도시 제주: 원도심 활성화 시뮬레이터
               </p>
-              <p style={{ margin: '0 0 20px', fontSize: 15, lineHeight: 1.8, color: COL.body }}>
-                제주도는 이를 되살리기 위해 <b style={{ color: COL.text }}>'15분 도시'</b> 비전과 함께 공공기관 이전, 자율상권구역 지정,
-                탑동 도시재생혁신지구 등을 추진 중입니다. 이 게임은 그 과정을 10턴의 정책 결정으로 압축한 것입니다.
-              </p>
-               <a href="https://www.youtube.com/watch?v=aQ1ikJmCyDo" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', margin: '0 0 18px', color: '#ea580c', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>▶️ 제주 원도심 도시재생 특별기획 영상 보기 →</a>
-              <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
-                <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 12, padding: '15px 16px' }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 8, color: COL.orange }}>🎯 당신의 역할</div>
-                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: COL.body }}>
-                    당신은 <b style={{ color: COL.text }}>원도심 재생 추진단장</b>입니다. 10턴 동안 정책을 선택해
-                    <b style={{ color: COL.people }}> 생활인구</b> · <b style={{ color: COL.economy }}>상권 활력</b> · <b style={{ color: COL.infra }}>문화/기반시설</b> 세 지표를 끌어올리세요.
-                  </p>
-                </div>
-                <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 12, padding: '15px 16px' }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 8, color: COL.orange }}>📐 규칙</div>
-                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.85, color: COL.body }}>
-                    <li>시작 예산 <b style={{ color: COL.text }}>{START_BUDGET.toLocaleString()}만원</b> — 전부 살 수 없으니 선택과 집중!</li>
-                    <li>모든 지표는 <b style={{ color: COL.text }}>{START_SCORE}점</b>에서 시작 (침체 상태)</li>
-                    <li>매 턴 도시 쇠퇴로 모든 지표 <b style={{ color: COL.bad }}>−{DECAY}</b> — 가만히 두면 무너집니다.</li>
-                    <li>10턴 후 평균 <b style={{ color: COL.ok }}>{PASS_LINE}점 이상</b>이면 재생 성공!</li>
-                  </ul>
-                </div>
-              </div>
-              <button onClick={startGame} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontSize: 16.5, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 16px rgba(249,115,22,0.3)' }}>
-                <Sparkles size={18} /> 프로젝트 시작하기
-              </button>
             </div>
+
+            <div style={{ margin: '30px 0', borderRadius: 12, overflow: 'hidden', border: `1px solid ${COL.border}` }}>
+              <CityScape scores={{ people: 15, economy: 15, infra: 15 }} />
+            </div>
+
+            <button onClick={goToIntroStory} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontSize: 18, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 20px rgba(249,115,22,0.35)' }}>
+              <Sparkles size={20} /> 프로젝트 시작하기
+            </button>
+            
+            <p style={{ fontSize: 11.5, color: COL.faint, marginTop: 20, marginDrop: 0 }}>
+              2026 특별기획 행정 시뮬레이션 게임
+            </p>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 11.5, color: COL.faint, marginTop: 14 }}>
-            2026년 1월 4일 제주특별자치도 15분도시과 보도자료를 기반으로 기획된 행정 시뮬레이션입니다.
-          </p>
         </div>
       )}
 
-      {/* ===== 플레이 ===== */}
+      {/* ===== 2단계: 세계관 인트로 서사 (스토리텔링) ===== */}
+      {phase === 'story' && (
+        <div className="fadeup" style={{ maxWidth: 680, width: '100%', margin: '0 auto' }}>
+          <div style={panel({ padding: '40px 32px', minHeight: 420, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' })}>
+            
+            {/* 건너뛰기 버튼 */}
+            <button onClick={startGame} className="pbtn" style={{ position: 'absolute', top: 20, right: 23, background: 'none', border: 'none', color: COL.mute, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
+              건너뛰기(Skip) <ChevronRight size={16} />
+            </button>
+
+            {/* 스토리 텍스트 출력부 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 20 }}>
+              {storyLines.map((line, index) => {
+                const isVisible = storyIndex >= index;
+                const isLast = index === storyLines.length - 1;
+                return (
+                  <p key={index} style={{
+                    margin: 0,
+                    fontSize: isLast ? 17 : 15.5,
+                    lineHeight: 1.8,
+                    fontWeight: isLast ? 800 : 500,
+                    color: isLast ? COL.orange : (index === storyLines.length - 2 ? COL.text : COL.body),
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? 'none' : 'translateY(10px)',
+                    transition: 'all 0.6s ease-out',
+                  }}>
+                    {line}
+                  </p>
+                );
+              })}
+            </div>
+
+            {/* 모든 이야기가 나오면 등장하는 가이드 및 시작 버튼 */}
+            {storyIndex >= storyLines.length ? (
+              <div className="fadeup" style={{ marginTop: 35, borderTop: `1px dashed ${COL.border}`, paddingTop: 24 }}>
+                <div style={{ background: COL.panelSoft, borderRadius: 12, padding: '14px 16px', marginBottom: 20, fontSize: 13, lineHeight: 1.8, color: COL.body }}>
+                  📌 <b>추진단장의 임무 가이드</b>
+                  <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                    <li>주어진 예산 <b>{START_BUDGET.toLocaleString()}만원</b>을 영리하게 분배하세요.</li>
+                    <li>매 턴 <b>도시 쇠퇴(-1)</b>를 극복하고, 10턴 후 평균 <b>{PASS_LINE}점 이상</b>을 달성해야 합니다.</li>
+                  </ul>
+                </div>
+                
+                <button onClick={startGame} className="pbtn" style={{ width: '100%', background: COL.text, color: '#fff', border: 'none', borderRadius: 12, padding: 15, fontSize: 16, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 12px rgba(15,27,51,0.2)' }}>
+                  임무 브리핑 완료 · 게임 시작 <ArrowRight size={16} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ height: 60 }} /> // 레이아웃 유지를 위한 빈 공간
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ===== 3단계: 플레이 화면 ===== */}
       {phase === 'play' && (
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${COL.border}`, paddingBottom: 14, marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 24, lineHeight: 1 }}>🍊</span>
@@ -480,7 +505,7 @@ export default function App() {
           </div>
 
           <div className="layout">
-            {/* 좌 */}
+            {/* 좌측 패널 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
               <div style={panel({ padding: 10 })}>
                 {playPhoto ? (
@@ -528,7 +553,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 우 */}
+            {/* 우측 패널 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={panel({ padding: 18 })}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -577,9 +602,9 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== 결과 ===== */}
+      {/* ===== 결과 화면 ===== */}
       {phase === 'result' && (
-        <div className="fadeup" style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="fadeup" style={{ maxWidth: 520, margin: '0 auto', width: '100%' }}>
           <div style={{ background: COL.panel, border: `1px solid ${COL.border}`, borderRadius: 18, padding: 30, textAlign: 'center', boxShadow: '0 20px 50px rgba(15,30,60,0.12)' }}>
             <div style={{ width: 88, height: 88, margin: '0 auto 14px', borderRadius: '50%', background: grade.c + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${grade.c}55` }}>
               <span style={{ fontSize: 42, fontWeight: 900, color: grade.c }}>{grade.g}</span>
@@ -605,7 +630,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== Tip 모달 ===== */}
+      {/* ===== 도움말 팝업 모달 ===== */}
       {tip && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18, zIndex: 50 }}>
           <div className="pop" style={{ background: COL.panel, border: `1px solid ${COL.border}`, borderRadius: 18, maxWidth: 460, width: '100%', boxShadow: '0 24px 60px rgba(15,30,60,0.25)', overflow: 'hidden' }}>
@@ -616,7 +641,7 @@ export default function App() {
             <div style={{ padding: '18px 20px' }}>
               <p style={{ margin: '0 0 16px', fontSize: 14, lineHeight: 1.8, color: COL.body }}>{policyTips[tip.idx].body}</p>
               <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 10, padding: '12px 14px', marginBottom: 18 }}>
-                <p style={{ margin: '0 0 8px', fontSize: 11.5, color: COL.mute }}>이번 선택 — <b style={{ color: COL.text }}>{tip.option.text}</b></p>
+                <p style={{ margin: '0 0 8px', fontSize: 11.5, color: COL.text }}>이번 선택 — <b>{tip.option.text}</b></p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {tip.option.effects.people !== 0 && <Badge c={COL.people} t={`인구 ${fmt(tip.option.effects.people)}`} />}
                   {tip.option.effects.economy !== 0 && <Badge c={COL.economy} t={`상권 ${fmt(tip.option.effects.economy)}`} />}
