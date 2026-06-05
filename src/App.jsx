@@ -426,8 +426,6 @@ export default function App() {
                 탑동 도시재생혁신지구 등을 추진 중입니다. 이 게임은 그 과정을 10턴의 정책 결정으로 압축한 것입니다.
               </p>
                <a href="https://www.youtube.com/watch?v=aQ1ikJmCyDo" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', margin: '0 0 18px', color: '#ea580c', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>▶️ 제주 원도심 도시재생 특별기획 영상 보기 →</a>
-  제주 원도심 도시재생 특별기획 영상 보기 →
-</a>
               <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
                 <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 12, padding: '15px 16px' }}>
                   <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 8, color: COL.orange }}>🎯 당신의 역할</div>
