@@ -406,8 +406,8 @@ export default function App() {
               <div style={{ position: 'absolute', top: 18, left: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ background: COL.orangeD, padding: 9, borderRadius: 12, display: 'flex', boxShadow: '0 4px 12px rgba(249,115,22,0.4)' }}><Building2 size={22} color="#fff" /></div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', color: COL.text, textShadow: '0 1px 8px rgba(255,255,255,0.7)' }}>15분 도시 제주</h1>
-                  <p style={{ margin: 0, fontSize: 12.5, color: '#3f5170', fontWeight: 600, textShadow: '0 1px 6px rgba(255,255,255,0.7)' }}>원도심 도시재생 시뮬레이터</p>
+                  <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', color: COL.text, textShadow: '0 1px 8px rgba(255,255,255,0.7)' }}>구해줘! 제주 원도심</h1>
+                  <p style={{ margin: 0, fontSize: 12.5, color: '#3f5170', fontWeight: 600, textShadow: '0 1px 6px rgba(255,255,255,0.7)' }}>15분 도시 제주: 원도심 활성화 시뮬레이터</p>
                 </div>
               </div>
               <div style={{ position: 'absolute', top: 18, right: 18 }}><MusicBtn compact /></div>
