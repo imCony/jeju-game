@@ -6,16 +6,23 @@ import {
 } from 'lucide-react';
 
 /* =========================================================================
-   ▶ 탑동 앞바다에 직접 찍은 사진 넣기:
-     1) GitHub 저장소의 public 폴더에 사진 업로드 (예: public/topdong.jpg)
-     2) 아래 SEA_IMAGE 를 '/topdong.jpg' 로 변경
-   비워두면 낮 시간대 바다(흰 파도 + 햇빛 반사)가 기본으로 표시됩니다.
+   ▶ 직접 찍은 사진(4:3 권장) 넣기. public 폴더에 올린 뒤 경로 지정.
+   - INTRO_PHOTO : 시작 화면 사진 (예: '/intro.jpg')
+   - PLAY_PHOTOS : 게임 화면 사진을 '턴별'로 지정하는 배열.
+       [0]=1턴, [1]=2턴 ... [9]=10턴 (최대 10개).
+       어떤 턴 칸을 ''(빈칸)으로 두면 직전에 지정한 사진이 그대로 유지됩니다.
+       → 한 장만 모든 턴에 쓰려면 [0]에만 넣으면 됩니다.
+   각각 비워두면 그 화면은 기본 도시 그림이 표시됩니다.
+   (사진은 늘어남 없이 cover로 꽉 차게 들어갑니다)
    ========================================================================= */
-const SEA_IMAGE = '';
+const INTRO_PHOTO = '';
+const PLAY_PHOTOS = [
+  // 예시) '/play1.jpg', '', '', '', '/play5.jpg', '', '', '', '', '/play10.jpg'
+];
 
 /* ▶ 배경음악 파일을 쓰려면 public 에 mp3 넣고 BGM_URL 지정 (저작권 없는 음원만).
      비워두면 코드로 생성한 잔잔한 앰비언트가 재생됩니다. */
-const BGM_URL = '/bgm.mp3';
+const BGM_URL = '';
 
 /* 밸런스 */
 const START_BUDGET = 7000;
@@ -110,7 +117,7 @@ function mulberry32(a) {
   };
 }
 const rng = mulberry32(20260104);
-const PEOPLE_SPOTS = Array.from({ length: 16 }, () => ({ x: 55 + rng() * 500, y: 388 + rng() * 9, d: (rng() * 3).toFixed(2) }));
+const PEOPLE_SPOTS = Array.from({ length: 16 }, () => ({ x: 55 + rng() * 500, y: 265 + rng() * 7, d: (rng() * 3).toFixed(2) }));
 const CLOUDS = [
   { x: 95, y: 70, s: 1.0, d: 0 }, { x: 235, y: 46, s: 1.3, d: 1.2 },
   { x: 385, y: 92, s: 0.85, d: 2.4 }, { x: 470, y: 56, s: 1.05, d: 0.6 }, { x: 165, y: 122, s: 0.75, d: 3 },
@@ -206,9 +213,9 @@ function CityScape({ scores }) {
   const signCount = Math.round((scores.economy / 100) * BUILDINGS.length);
   const peopleCount = Math.round((scores.people / 100) * PEOPLE_SPOTS.length);
   const treeCount = Math.round((scores.infra / 100) * TREE_SPOTS.length);
-  const ground = 380;
+  const ground = 260;
   return (
-    <svg viewBox="0 0 600 450" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', display: 'block', borderRadius: 12 }}>
+    <svg viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', display: 'block', borderRadius: 12 }}>
       <defs>
         <linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#bfe2ff" /><stop offset="70%" stopColor="#e3f1ff" /><stop offset="100%" stopColor="#f3f9ff" /></linearGradient>
         <radialGradient id="dsun" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#fffbe8" /><stop offset="100%" stopColor="#ffe08a" /></radialGradient>
@@ -216,25 +223,25 @@ function CityScape({ scores }) {
         <radialGradient id="damb" cx="50%" cy="100%" r="80%"><stop offset="0%" stopColor="#fdba74" stopOpacity={0.04 + (avg / 100) * 0.16} /><stop offset="100%" stopColor="#fdba74" stopOpacity="0" /></radialGradient>
         <linearGradient id="dsea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7fc8ef" /><stop offset="100%" stopColor="#3f97cf" /></linearGradient>
         <linearGradient id="dsunref" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#fff4c8" stopOpacity="0.8" /><stop offset="100%" stopColor="#fff4c8" stopOpacity="0" /></linearGradient>
-        <clipPath id="dseaClip"><rect x="0" y="400" width="600" height="50" /></clipPath>
+        <clipPath id="dseaClip"><rect x="0" y="274" width="600" height="26" /></clipPath>
       </defs>
 
-      <rect x="0" y="0" width="600" height="450" fill="url(#dsky)" />
+      <rect x="0" y="0" width="600" height="300" fill="url(#dsky)" />
       {/* 해 */}
-      <circle cx="520" cy="64" r="46" fill="url(#dsunglow)" />
-      <circle cx="520" cy="64" r="22" fill="url(#dsun)" />
+      <circle cx="524" cy="46" r="38" fill="url(#dsunglow)" />
+      <circle cx="524" cy="46" r="17" fill="url(#dsun)" />
       {/* 구름 */}
       {CLOUDS.map((c, i) => (
-        <g key={i} className="cloud" style={{ animationDelay: `${c.d}s` }} opacity="0.92" transform={`translate(${c.x},${c.y}) scale(${c.s})`}>
+        <g key={i} className="cloud" style={{ animationDelay: `${c.d}s` }} opacity="0.92" transform={`translate(${c.x},${c.y * 0.62}) scale(${c.s * 0.85})`}>
           <ellipse cx="0" cy="0" rx="22" ry="12" fill="#ffffff" />
           <ellipse cx="18" cy="4" rx="16" ry="10" fill="#ffffff" />
           <ellipse cx="-16" cy="5" rx="14" ry="9" fill="#f4f9ff" />
         </g>
       ))}
       {/* 한라산 */}
-      <path d="M -20 300 Q 150 150 300 220 Q 450 130 640 300 Z" fill="#a7cbe0" opacity="0.7" />
-      <path d="M 258 208 L 300 184 L 342 208 L 326 218 Q 300 206 274 218 Z" fill="#ffffff" opacity="0.85" />
-      <rect x="0" y="200" width="600" height="250" fill="url(#damb)" />
+      <path d="M -20 230 Q 150 110 300 168 Q 450 95 640 230 Z" fill="#a7cbe0" opacity="0.7" />
+      <path d="M 266 168 L 300 148 L 334 168 L 320 176 Q 300 167 280 176 Z" fill="#ffffff" opacity="0.85" />
+      <rect x="0" y="150" width="600" height="150" fill="url(#damb)" />
 
       {/* 건물 */}
       {BUILDINGS.map((b, i) => {
@@ -258,8 +265,8 @@ function CityScape({ scores }) {
       })}
 
       {/* 도로 / 보행로 */}
-      <rect x="0" y={ground} width="600" height="6" fill="#c4cfde" />
-      <rect x="0" y={ground + 6} width="600" height="14" fill="#cdd7e4" />
+      <rect x="0" y={ground} width="600" height="5" fill="#c4cfde" />
+      <rect x="0" y={ground + 5} width="600" height="9" fill="#cdd7e4" />
       {/* 나무 (기반시설↑) */}
       {TREE_SPOTS.slice(0, treeCount).map((tx, i) => (
         <g key={i} className="tree" style={{ animationDelay: `${(i * 0.4).toFixed(1)}s` }}>
@@ -275,20 +282,14 @@ function CityScape({ scores }) {
       ))}
 
       {/* === 탑동 앞바다 === */}
-      {SEA_IMAGE ? (
-        <image href={SEA_IMAGE} x="0" y="400" width="600" height="50" preserveAspectRatio="xMidYMid slice" clipPath="url(#dseaClip)" />
-      ) : (
-        <>
-          <rect x="0" y="400" width="600" height="50" fill="url(#dsea)" />
-          <rect className="searef" x="508" y="400" width="24" height="50" fill="url(#dsunref)" />
-          <g className="wave" opacity="0.75">
-            {Array.from({ length: 26 }).map((_, i) => <rect key={i} x={i * 30} y={414} width={12} height={2} rx={1} fill="#ffffff" />)}
-            {Array.from({ length: 26 }).map((_, i) => <rect key={'b' + i} x={i * 30 + 15} y={428} width={12} height={2} rx={1} fill="#d6efff" />)}
-          </g>
-        </>
-      )}
-      <text x="14" y="444" fontSize="9" fill="rgba(255,255,255,0.9)" letterSpacing="2">탑동 앞바다</text>
-      {avg < 8 && <text x="300" y="250" textAnchor="middle" fontSize="11" fill="#7a8aa3">— 침체된 원도심 —</text>}
+      <rect x="0" y="274" width="600" height="26" fill="url(#dsea)" />
+      <rect className="searef" x="512" y="274" width="24" height="26" fill="url(#dsunref)" />
+      <g className="wave" opacity="0.75">
+        {Array.from({ length: 26 }).map((_, i) => <rect key={i} x={i * 30} y={282} width={12} height={2} rx={1} fill="#ffffff" />)}
+        {Array.from({ length: 26 }).map((_, i) => <rect key={'b' + i} x={i * 30 + 15} y={290} width={12} height={2} rx={1} fill="#d6efff" />)}
+      </g>
+      <text x="12" y="295" fontSize="8" fill="rgba(255,255,255,0.9)" letterSpacing="2">탑동 앞바다</text>
+      {avg < 8 && <text x="300" y="150" textAnchor="middle" fontSize="11" fill="#7a8aa3">— 침체된 원도심 —</text>}
     </svg>
   );
 }
@@ -309,6 +310,9 @@ export default function App() {
   const avg = useMemo(() => Math.round((scores.people + scores.economy + scores.infra) / 3), [scores]);
   const grade = getGrade(avg);
   const canAffordAny = event.options.some((o) => budget >= o.cost);
+  // 현재 턴의 게임 사진 (빈 칸이면 직전에 지정한 사진 유지)
+  let playPhoto = '';
+  for (let t = turn - 1; t >= 0; t--) { if (PLAY_PHOTOS[t]) { playPhoto = PLAY_PHOTOS[t]; break; } }
 
   const playMusic = (on) => {
     if (BGM_URL) {
@@ -365,6 +369,7 @@ export default function App() {
         @keyframes waveMove { from{transform:translateX(0)} to{transform:translateX(-30px)} }
         @keyframes searefAnim { 0%,100%{opacity:.35} 50%{opacity:.85} }
         @keyframes treePop { from{transform:scale(.4); opacity:0} to{transform:scale(1); opacity:1} }
+        @keyframes bldRise { from{transform:translateY(10px) scaleY(.8); opacity:0} to{transform:none; opacity:1} }
         @keyframes fadeUp { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
         @keyframes pop { from{opacity:0; transform:scale(.94)} to{opacity:1; transform:scale(1)} }
         .cloud{ animation:cloudDrift 9s ease-in-out infinite alternate; }
@@ -372,6 +377,7 @@ export default function App() {
         .wave{ animation:waveMove 6s linear infinite; }
         .searef{ animation:searefAnim 4s ease-in-out infinite; }
         .tree{ animation:treePop .5s ease both; transform-box:fill-box; transform-origin:center bottom; }
+        .bldpop{ animation:bldRise .5s ease both; transform-box:fill-box; transform-origin:center bottom; }
         .fadeup{ animation:fadeUp .45s ease both; }
         .pop{ animation:pop .28s ease both; }
         .opt:hover:not(:disabled){ border-color:${COL.orange} !important; background:#fff7f1 !important; transform:translateY(-2px); box-shadow:0 8px 20px rgba(249,115,22,0.12); }
@@ -389,7 +395,14 @@ export default function App() {
         <div className="fadeup" style={{ maxWidth: 860, margin: '0 auto' }}>
           <div style={panel({ overflow: 'hidden' })}>
             <div style={{ position: 'relative', borderBottom: `1px solid ${COL.border}` }}>
-              <CityScape scores={{ people: 18, economy: 18, infra: 22 }} />
+              {INTRO_PHOTO ? (
+                <div style={{ width: '100%', aspectRatio: '16 / 9', maxHeight: 360, overflow: 'hidden', position: 'relative' }}>
+                  <img src={INTRO_PHOTO} alt="제주 원도심" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.25) 32%, rgba(0,0,0,0) 58%)' }} />
+                </div>
+              ) : (
+                <CityScape scores={{ people: 18, economy: 18, infra: 22 }} />
+              )}
               <div style={{ position: 'absolute', top: 18, left: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ background: COL.orangeD, padding: 9, borderRadius: 12, display: 'flex', boxShadow: '0 4px 12px rgba(249,115,22,0.4)' }}><Building2 size={22} color="#fff" /></div>
                 <div>
@@ -468,7 +481,15 @@ export default function App() {
           <div className="layout">
             {/* 좌 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
-              <div style={panel({ padding: 10 })}><CityScape scores={scores} /></div>
+              <div style={panel({ padding: 10 })}>
+                {playPhoto ? (
+                  <div style={{ width: '100%', aspectRatio: '16 / 9', maxHeight: 320, overflow: 'hidden', borderRadius: 12 }}>
+                    <img src={playPhoto} alt="제주 원도심" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                ) : (
+                  <CityScape scores={scores} />
+                )}
+              </div>
               <div key={turn} className="fadeup" style={panel({ padding: 24 })}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: COL.orangeD + '1a', borderRadius: 999, padding: '4px 12px', fontSize: 11.5, fontWeight: 800, color: COL.orange, letterSpacing: '0.03em', marginBottom: 12 }}>
                   TURN {turn} · 이번 턴의 결정
