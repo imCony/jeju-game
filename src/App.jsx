@@ -425,6 +425,10 @@ export default function App() {
                 제주도는 이를 되살리기 위해 <b style={{ color: COL.text }}>'15분 도시'</b> 비전과 함께 공공기관 이전, 자율상권구역 지정,
                 탑동 도시재생혁신지구 등을 추진 중입니다. 이 게임은 그 과정을 10턴의 정책 결정으로 압축한 것입니다.
               </p>
+               <a href="https://www.youtube.com/watch?v=aQ1ikJmCyDo" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, margin: '0 0 18px', color: '#ea580c', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+  <svg width="26" height="18" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6 L20 14 L11 14 Z" fill="#fff" transform="translate(0,-2)"/></svg>
+  제주 원도심 도시재생 특별기획 영상 보기 →
+</a>
               <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
                 <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 12, padding: '15px 16px' }}>
                   <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 8, color: COL.orange }}>🎯 당신의 역할</div>
