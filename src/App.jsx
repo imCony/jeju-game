@@ -22,7 +22,7 @@ const PLAY_PHOTOS = [
 
 /* ▶ 배경음악 파일을 쓰려면 public 에 mp3 넣고 BGM_URL 지정 (저작권 없는 음원만).
      비워두면 코드로 생성한 잔잔한 앰비언트가 재생됩니다. */
-const BGM_URL = '';
+const BGM_URL = '/bgm.mp3';
 
 /* 밸런스 */
 const START_BUDGET = 7000;
