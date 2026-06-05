@@ -127,43 +127,6 @@ const getGrade = (avg) =>
   avg >= 60 ? { g: 'B', c: '#2563eb' } :
   avg >= 45 ? { g: 'C', c: '#ea580c' } : { g: 'D', c: '#e11d48' };
 
-/* 앰비언트 사운드 */
-function createAmbience() {
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  if (!Ctx) return null;
-  const ctx = new Ctx();
-  const master = ctx.createGain(); master.gain.value = 0;
-  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 950;
-  lp.connect(master); master.connect(ctx.destination);
-  [130.81, 196.0, 293.66, 329.63].forEach((f, i) => {
-    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.detune.value = (i - 1.5) * 4;
-    const g = ctx.createGain(); g.gain.value = 0.085;
-    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05 + i * 0.025;
-    const lg = ctx.createGain(); lg.gain.value = 0.05;
-    lfo.connect(lg); lg.connect(g.gain);
-    o.connect(g); g.connect(lp); o.start(); lfo.start();
-  });
-  const buf = ctx.createBuffer(1, 2 * ctx.sampleRate, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
-  const noise = ctx.createBufferSource(); noise.buffer = buf; noise.loop = true;
-  const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 360;
-  const ng = ctx.createGain(); ng.gain.value = 0.045;
-  const nlfo = ctx.createOscillator(); nlfo.frequency.value = 0.08;
-  const nlg = ctx.createGain(); nlg.gain.value = 0.03;
-  nlfo.connect(nlg); nlg.connect(ng.gain);
-  noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start(); nlfo.start();
-  return {
-    ctx, master,
-    fadeTo(v, t = 2) {
-      const now = ctx.currentTime;
-      master.gain.cancelScheduledValues(now);
-      master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
-      master.gain.linearRampToValueAtTime(v, now + t);
-    },
-  };
-}
-
 const COL = {
   bg: '#eef3fa', panel: '#ffffff', panelSoft: '#f4f7fc', border: '#e3e9f2',
   text: '#0f1b33', body: '#3a4760', mute: '#64748b', faint: '#94a3b8',
@@ -287,7 +250,7 @@ export default function App() {
   const [storyIndex, setStoryIndex] = useState(0);
   const storyLines = [
     "한때 행정, 상업, 문화의 중심지로 북적였던 제주 원도심(칠성로·중앙로·동문시장·탑동)...",
-    "1990년대 이후 신도심이 개발되면서 사람도, 가게도, 따뜻했던 온기도 모두 떠나갔습니다.",
+    "1990년대 이후 신제주(연동·노형)가 개발되면서 사람도, 가게도, 따뜻했던 온기도 모두 떠나갔습니다.",
     "텅 비어버린 거리에 남은 것은 깊어지는 침체와 쓸쓸한 정적뿐입니다.",
     "이 서글픈 공간을 다시 걷고 싶고, 머물고 싶은 '15분 도시'로 되살리기 위해...",
     "바로 당신이 새로운 👑 '원도심 재생 추진단장'으로 임명되었습니다."
@@ -420,7 +383,7 @@ export default function App() {
             </button>
             
             <p style={{ fontSize: 11.5, color: COL.faint, marginTop: 20, marginDrop: 0 }}>
-              2026 특별기획 행정 시뮬레이션 게임
+              15분도시추진단 보도자료 인용 (2026.01.04)
             </p>
           </div>
         </div>
@@ -431,54 +394,58 @@ export default function App() {
         <div className="fadeup" style={{ maxWidth: 680, width: '100%', margin: '0 auto' }}>
           <div style={panel({ padding: '40px 32px', minHeight: 420, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' })}>
             
-            {/* 건너뛰기 버튼 */}
-            <button onClick={startGame} className="pbtn" style={{ position: 'absolute', top: 20, right: 23, background: 'none', border: 'none', color: COL.mute, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
-              건너뛰기(Skip) <ChevronRight size={16} />
-            </button>
+{storyIndex < storyLines.length && (
+          <button onClick={skipStory} className="pbtn" style={{ position: 'absolute', top: 20, right: 23, background: 'none', border: 'none', color: COL.mute, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}>
+            건너뛰기(Skip) <ChevronRight size={16} />
+          </button>
+        )}
 
-            {/* 스토리 텍스트 출력부 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 20 }}>
-              {storyLines.map((line, index) => {
-                const isVisible = storyIndex >= index;
-                const isLast = index === storyLines.length - 1;
-                return (
-                  <p key={index} style={{
-                    margin: 0,
-                    fontSize: isLast ? 17 : 15.5,
-                    lineHeight: 1.8,
-                    fontWeight: isLast ? 800 : 500,
-                    color: isLast ? COL.orange : (index === storyLines.length - 2 ? COL.text : COL.body),
-                    opacity: isVisible ? 1 : 0,
-                    transform: isVisible ? 'none' : 'translateY(10px)',
-                    transition: 'all 0.6s ease-out',
-                  }}>
-                    {line}
-                  </p>
-                );
-              })}
-            </div>
-
-            {/* 모든 이야기가 나오면 등장하는 가이드 및 시작 버튼 */}
-            {storyIndex >= storyLines.length ? (
-              <div className="fadeup" style={{ marginTop: 35, borderTop: `1px dashed ${COL.border}`, paddingTop: 24 }}>
-                <div style={{ background: COL.panelSoft, borderRadius: 12, padding: '14px 16px', marginBottom: 20, fontSize: 13, lineHeight: 1.8, color: COL.body }}>
-                  📌 <b>추진단장의 임무 가이드</b>
-                  <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
-                    <li>주어진 예산 <b>{START_BUDGET.toLocaleString()}만원</b>을 영리하게 분배하세요.</li>
-                    <li>매 턴 <b>도시 쇠퇴(-1)</b>를 극복하고, 10턴 후 평균 <b>{PASS_LINE}점 이상</b>을 달성해야 합니다.</li>
-                  </ul>
-                </div>
-                
-                <button onClick={startGame} className="pbtn" style={{ width: '100%', background: COL.text, color: '#fff', border: 'none', borderRadius: 12, padding: 15, fontSize: 16, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 12px rgba(15,27,51,0.2)' }}>
-                  임무 브리핑 완료 · 게임 시작 <ArrowRight size={16} />
-                </button>
-              </div>
-            ) : (
-              <div style={{ height: 60 }} /> // 레이아웃 유지를 위한 빈 공간
-            )}
-          </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 20 }}>
+          {storyLines.map((line, index) => {
+            const isVisible = storyIndex >= index;
+            const isLast = index === storyLines.length - 1;
+            return (
+              <p key={index} style={{
+                margin: 0,
+                fontSize: isLast ? 17 : 15.5,
+                lineHeight: 1.8,
+                fontWeight: isLast ? 800 : 500,
+                color: isLast ? COL.orange : (index === storyLines.length - 2 ? COL.text : COL.body),
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'none' : 'translateY(10px)',
+                transition: 'all 0.5s ease-out',
+              }}>
+                {line}
+              </p>
+            );
+          })}
         </div>
-      )}
+
+        
+        {storyIndex >= storyLines.length ? (
+          <div className="fadeup" style={{ marginTop: 35, borderTop: `1px dashed ${COL.border}`, paddingTop: 24 }}>
+            <div style={{ background: COL.panelSoft, border: `1px solid ${COL.border}`, borderRadius: 12, padding: '16px 18px', marginBottom: 20, fontSize: 14, lineHeight: 1.8, color: COL.body }}>
+              <div style={{ fontWeight: 800, color: COL.orange, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 14.5 }}>
+                📌 추진단장의 임무 가이드
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <li>주어진 제한 예산 <b>{START_BUDGET.toLocaleString()}만원</b>을 영리하게 분배하세요.</li>
+                <li>10턴 동안 <b style={{ color: COL.people }}>생활인구</b>, <b style={{ color: COL.economy }}>상권 활력</b>, <b style={{ color: COL.infra }}>문화/기반시설</b> 세 지표를 전략적으로 끌어올려야 합니다.</li>
+                <li>매 턴 발생하는 <b>도시 쇠퇴(−1)</b>를 극복하고, 최종 종합 평균 <b>{PASS_LINE}점 이상</b>을 달성하면 재생 성공입니다!</li>
+              </ul>
+            </div>
+            
+            <button onClick={startGame} className="pbtn" style={{ width: '100%', background: COL.text, color: '#fff', border: 'none', borderRadius: 12, padding: 15, fontSize: 16, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 12px rgba(15,27,51,0.2)' }}>
+              임무 확인 완료 · 게임 시작 <ArrowRight size={16} />
+            </button>
+          </div>
+        ) : (
+          <div style={{ height: 60 }} /> // 애니메이션 시 레이아웃 흔들림 방지용 빈 공간
+        )}
+      </div>
+    </div>
+  )}
 
       {/* ===== 3단계: 플레이 화면 ===== */}
       {phase === 'play' && (
