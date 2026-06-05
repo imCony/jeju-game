@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import {
-  Building2, Users, TrendingUp, Wallet, RotateCcw, ArrowRight,
+  Building2, Citrus, Users, TrendingUp, Wallet, RotateCcw, ArrowRight,
   AlertTriangle, CheckCircle2, Lightbulb, MapPin, Trophy, Sparkles,
   Volume2, VolumeX
 } from 'lucide-react';
@@ -404,7 +404,7 @@ export default function App() {
                 <CityScape scores={{ people: 18, economy: 18, infra: 22 }} />
               )}
               <div style={{ position: 'absolute', top: 18, left: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ background: COL.orangeD, padding: 9, borderRadius: 12, display: 'flex', boxShadow: '0 4px 12px rgba(249,115,22,0.4)' }}><Building2 size={22} color="#fff" /></div>
+                <div style={{ background: COL.orangeD, padding: 9, borderRadius: 12, display: 'flex', boxShadow: '0 4px 12px rgba(249,115,22,0.4)' }}><Citrus size={22} color="#fff" /></div>
                 <div>
                   <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', color: COL.text, textShadow: '0 1px 8px rgba(255,255,255,0.7)' }}>구해줘! 제주 원도심</h1>
                   <p style={{ margin: 0, fontSize: 12.5, color: '#3f5170', fontWeight: 600, textShadow: '0 1px 6px rgba(255,255,255,0.7)' }}>15분 도시 제주: 원도심 활성화 시뮬레이터</p>
@@ -462,7 +462,7 @@ export default function App() {
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${COL.border}`, paddingBottom: 14, marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ background: COL.orangeD, padding: 8, borderRadius: 10, display: 'flex' }}><Building2 size={20} color="#fff" /></div>
+              <div style={{ background: COL.orangeD, padding: 8, borderRadius: 10, display: 'flex' }}><Citrus size={20} color="#fff" /></div>
               <div><h1 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>15분 도시 제주</h1><p style={{ margin: 0, fontSize: 11.5, color: COL.mute }}>원도심 재생 시뮬레이터</p></div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
