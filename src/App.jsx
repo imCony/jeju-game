@@ -365,35 +365,36 @@ export default function App() {
 
 {/* ===== 1단계: 타이틀 화면 ===== */}
       {phase === 'title' && (
-        <div className="fadeup" style={{ maxWidth: 640, width: '100%', margin: '0 auto' }}>
-          <div style={panel({ overflow: 'hidden', textAlign: 'center', padding: '40px 28px' })}>
+        // PC 화면에서 좌우로 너무 퍼지지 않도록 maxWidth를 500으로 살짝 줄여 안정감을 줬습니다.
+        <div className="fadeup" style={{ maxWidth: 500, width: '100%', margin: '0 auto' }}>
+          <div style={panel({ overflow: 'hidden', textAlign: 'center', padding: '32px 24px' })}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
               <MusicBtn compact />
             </div>
             
-            <div style={{ margin: '20px 0' }}>
-              <span style={{ fontSize: 64, display: 'block', marginBottom: 10, animation: 'cloudDrift 3s ease-in-out infinite alternate' }}>🍊</span>
-              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 900, letterSpacing: '-0.03em', color: COL.text }}>
+            <div style={{ margin: '10px 0 20px' }}>
+              <span style={{ fontSize: 54, display: 'block', marginBottom: 8, animation: 'cloudDrift 3s ease-in-out infinite alternate' }}>🍊</span>
+              <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em', color: COL.text }}>
                 구해줘! 제주 원도심
               </h1>
-              <p style={{ margin: '8px 0 0', fontSize: 14, color: COL.mute, fontWeight: 600 }}>
+              <p style={{ margin: '6px 0 0', fontSize: 13, color: COL.mute, fontWeight: 600 }}>
                 15분 도시 제주: 원도심 활성화 시뮬레이터
               </p>
             </div>
 
-            {/* ★ 사진 이미지 박스 구역 */}
-            <div style={{ margin: '24px 0 32px', borderRadius: 14, overflow: 'hidden', border: `1px solid ${COL.border}`, boxShadow: 'inset 0 0 1px rgba(0,0,0,0.1)', position: 'relative' }}>
+            {/* ★ 가로세로 비율을 원본 그대로 유지하는 이미지 박스 구역 */}
+            <div style={{ margin: '20px 0 28px', borderRadius: 14, overflow: 'hidden', border: `1px solid ${COL.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
               {INTRO_PHOTO ? (
-                // 높이를 300px로 시원하게 키우고, 한라산의 산봉우리와 뭉게구름이 가장 웅장하게 보이도록 비율을 최적화했습니다.
-                <div style={{ width: '100%', height: 300, overflow: 'hidden' }}>
+                // 고정 높이를 없애고, 가로세로 비율(aspectRatio)을 지정해 아래쪽 풍경까지 잘림 없이 다 나오게 만듭니다.
+                <div style={{ width: '100%', aspectRatio: '3 / 4', overflow: 'hidden' }}>
                   <img 
                     src={INTRO_PHOTO} 
                     alt="제주 원도심 배경" 
                     style={{ 
                       width: '100%', 
                       height: '100%', 
-                      objectFit: 'cover', 
-                      objectPosition: 'center 45%' // 구름과 산의 비율이 가장 안정적으로 떨어지는 축입니다.
+                      objectFit: 'cover',
+                      objectPosition: 'center bottom' // 사진의 아래쪽(길거리 풍경)을 기준으로 정렬합니다.
                     }} 
                   />
                 </div>
@@ -402,12 +403,12 @@ export default function App() {
               )}
             </div>
 
-            <button onClick={goToIntroStory} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontSize: 18, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 20px rgba(249,115,22,0.35)' }}>
-              <Sparkles size={20} /> 프로젝트 시작하기
+            <button onClick={goToIntroStory} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 15, fontSize: 17, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 16px rgba(249,115,22,0.3)' }}>
+              <Sparkles size={18} /> 프로젝트 시작하기
             </button>
             
-            <p style={{ fontSize: 11.5, color: COL.faint, marginTop: 20 }}>
-              15분도시추진단 보도자료 인용(2026.01.04)
+            <p style={{ fontSize: 11, color: COL.faint, marginTop: 16, marginBottom: 0 }}>
+              15분도시추진단 보도자료 인용 (2026.01.04)
             </p>
           </div>
         </div>
