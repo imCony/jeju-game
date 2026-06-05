@@ -8,7 +8,7 @@ import {
 /* =========================================================================
    ▶ 직접 찍은 사진(4:3 권장) 넣기. public 폴더에 올린 뒤 경로 지정.
    ========================================================================= */
-const INTRO_PHOTO = '';
+const INTRO_PHOTO = '/intro_bg.jpg';
 const PLAY_PHOTOS = [];
 const BGM_URL = '/bgm.mp3';
 
@@ -363,7 +363,7 @@ export default function App() {
         @media (max-width: 860px){ .layout{ grid-template-columns: 1fr; } .opts{ grid-template-columns: 1fr; } }
       `}</style>
 
-      {/* ===== 1단계: 타이틀 화면 ===== */}
+{/* ===== 1단계: 타이틀 화면 ===== */}
       {phase === 'title' && (
         <div className="fadeup" style={{ maxWidth: 640, width: '100%', margin: '0 auto' }}>
           <div style={panel({ overflow: 'hidden', textAlign: 'center', padding: '40px 28px' })}>
@@ -381,8 +381,16 @@ export default function App() {
               </p>
             </div>
 
-            <div style={{ margin: '30px 0', borderRadius: 12, overflow: 'hidden', border: `1px solid ${COL.border}` }}>
-              <CityScape scores={{ people: 15, economy: 15, infra: 15 }} />
+            {/* ★ 사진 크기를 슬림하게 조절한 이미지 박스 구역 */}
+            <div style={{ margin: '30px 0', borderRadius: 12, overflow: 'hidden', border: `1px solid ${COL.border}`, position: 'relative' }}>
+              {INTRO_PHOTO ? (
+                // 사진 높이를 최대 220px로 제한하여 화면을 너무 많이 차지하지 않게 조절했습니다.
+                <div style={{ width: '100%', height: 220, overflow: 'hidden' }}>
+                  <img src={INTRO_PHOTO} alt="제주 원도심 배경" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%' }} />
+                </div>
+              ) : (
+                <CityScape scores={{ people: 15, economy: 15, infra: 15 }} />
+              )}
             </div>
 
             <button onClick={goToIntroStory} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 16, fontSize: 18, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 20px rgba(249,115,22,0.35)' }}>
@@ -390,7 +398,7 @@ export default function App() {
             </button>
             
             <p style={{ fontSize: 11.5, color: COL.faint, marginTop: 20 }}>
-              2026 특별기획 행정 시뮬레이션 게임
+              15분도시추진단 보도자료 인용(2026.01.04)
             </p>
           </div>
         </div>
@@ -577,7 +585,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== 결과 화면 ===== */}
+{/* ===== 결과 화면 ===== */}
       {phase === 'result' && (
         <div className="fadeup" style={{ maxWidth: 520, margin: '0 auto', width: '100%' }}>
           <div style={{ background: COL.panel, border: `1px solid ${COL.border}`, borderRadius: 18, padding: 30, textAlign: 'center', boxShadow: '0 20px 50px rgba(15,30,60,0.12)' }}>
@@ -594,10 +602,21 @@ export default function App() {
               <Bar icon={<TrendingUp size={15} color={COL.economy} />} label="상권 활력" value={scores.economy} color={COL.economy} />
               <Bar icon={<Building2 size={15} color={COL.infra} />} label="문화/기반시설" value={scores.infra} color={COL.infra} />
             </div>
-            <blockquote style={{ textAlign: 'left', background: '#fff7ef', borderLeft: `4px solid ${COL.orange}`, borderRadius: 8, padding: '14px 16px', fontSize: 13.5, lineHeight: 1.75, fontStyle: 'italic', color: COL.body, margin: '0 0 22px' }}>
+            
+            {/* 보도자료 인용구 블록 */}
+            <blockquote style={{ textAlign: 'left', background: '#fff7ef', borderLeft: `4px solid ${COL.orange}`, borderRadius: 8, padding: '14px 16px', fontSize: 13.5, lineHeight: 1.75, fontStyle: 'italic', color: COL.body, margin: '0 0 16px' }}>
               "도시를 형성하고 유지하며 성장시키는 데 가장 중요한 요소는 결국 '사람'으로, 원도심 재생의 궁극적 목표는 떠나간 사람이 다시 돌아오게 하는 것입니다."
               <span style={{ display: 'block', textAlign: 'right', fontStyle: 'normal', fontSize: 11.5, color: COL.faint, marginTop: 8 }}>— 15분도시추진단장 보도자료 중</span>
             </blockquote>
+
+            {/* ★ 추가된 유튜브 링크 영역 (유저 클릭 편의를 위해 마우스 호버 효과를 가볍게 줄 수 있도록 인라인 스타일 가공) */}
+            <div style={{ marginBottom: 24, textAlign: 'center' }}>
+              <a href="https://www.youtube.com/watch?v=aQ1ikJmCyDo" target="_blank" rel="noopener noreferrer" 
+                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#ea580c', fontWeight: 700, fontSize: 13.5, textDecoration: 'none', padding: '6px 12px', background: '#ea580c0d', borderRadius: 8 }}>
+                ▶️ 제주 원도심 도시재생 특별기획 영상 보기 →
+              </a>
+            </div>
+
             <button onClick={reset} className="pbtn" style={{ width: '100%', background: COL.orangeD, color: '#fff', border: 'none', borderRadius: 12, padding: 14, fontSize: 15.5, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 16px rgba(249,115,22,0.3)' }}>
               <RotateCcw size={17} /> 처음부터 다시 도전
             </button>
